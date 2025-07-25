@@ -40,7 +40,7 @@ jobs:
 
       - name: Start Docker services
         run: |
-          docker-compose up -d nginxwebsvr
+          docker compose up -d nginxwebsvr
           sleep 15
           docker ps
 
