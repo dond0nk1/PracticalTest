@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Message Submitted</title>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <h1>Message Successfully Submitted</h1>
+        
+        <div>
+            <h2>Your Message:</h2>
+            <p id="userMessage" style="border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9;">
+                Loading...
+            </p>
+        </div>
+        
+        <br>
+        <button onclick="returnHome()">Return to Home Page</button>
+
+        <script>
+            // Display the user's message from sessionStorage
+            window.onload = function() {
+                const message = sessionStorage.getItem('userMessage');
+                const messageElement = document.getElementById('userMessage');
+                
+                if (message) {
+                    messageElement.textContent = message;
+                    // Clear the stored message for security
+                    sessionStorage.removeItem('userMessage');
+                } else {
+                    messageElement.textContent = 'No message found.';
+                }
+            };
+            
+            function returnHome() {
+                window.location.href = 'index.html';
+            }
+        </script>
+    </body>
+</html>

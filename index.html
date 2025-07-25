@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Secure Form</title>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <h1>Secure Form</h1>
+        <form id="secureForm" onsubmit="return validateAndSanitize(event)">
+            <label for="userInput">Enter your message:</label><br>
+            <input type="text" 
+                   id="userInput" 
+                   name="userInput" 
+                   placeholder="Type your message here..." 
+                   required
+                   maxlength="200">
+            <br><br>
+            <button type="submit">Submit</button>
+        </form>
+        
+        <div id="errorMessage" style="color: red;"></div>
+        <div id="output"></div>
+
+        <script>
+            function validateAndSanitize(event) {
+                event.preventDefault();
+                
+                const input = document.getElementById('userInput').value;
+                const errorDiv = document.getElementById('errorMessage');
+                const outputDiv = document.getElementById('output');
+                
+                errorDiv.textContent = '';
+                outputDiv.textContent = '';
+                
+                if (!input || input.trim().length === 0) {
+                    errorDiv.textContent = 'Please enter a message.';
+                    return false;
+                }
+                
+                // Check for XSS patterns
+                const xssPatterns = [
+                    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+                    /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+                    /javascript:/gi,
+                    /on\w+\s*=/gi,
+                    /<[^>]*>/g
+                ];
+                
+                // Check for SQL injection patterns
+                const sqlInjectionPatterns = [
+                    /(\bUNION\b.*\bSELECT\b)/gi,
+                    /(\bSELECT\b.*\bFROM\b)/gi,
+                    /(\bINSERT\b.*\bINTO\b)/gi,
+                    /(\bUPDATE\b.*\bSET\b)/gi,
+                    /(\bDELETE\b.*\bFROM\b)/gi,
+                    /(\bDROP\b.*\bTABLE\b)/gi,
+                    /(\bCREATE\b.*\bTABLE\b)/gi,
+                    /(\bALTER\b.*\bTABLE\b)/gi,
+                    /('.*OR.*'.*=.*')/gi,
+                    /('.*AND.*'.*=.*')/gi,
+                    /(--|\#|\/\*)/g,
+                    /(\b1\s*=\s*1\b)/gi,
+                    /(\b1\s*OR\s*1\b)/gi,
+                    /('.*;\s*(DROP|DELETE|UPDATE|INSERT))/gi,
+                    /(EXEC\s*\()/gi,
+                    /(EXECUTE\s*\()/gi
+                ];
+                
+                // Check XSS patterns
+                for (let pattern of xssPatterns) {
+                    if (pattern.test(input)) {
+                        document.getElementById('userInput').value = ''; // Clear the input field
+                        return false;
+                    }
+                }
+                
+                // Check SQL injection patterns
+                for (let pattern of sqlInjectionPatterns) {
+                    if (pattern.test(input)) {
+                        document.getElementById('userInput').value = ''; // Clear the input field
+                        return false;
+                    }
+                }
+                
+                // Sanitize and display
+                const sanitized = sanitizeInput(input);
+                
+                // Store sanitized input in sessionStorage and redirect
+                sessionStorage.setItem('userMessage', sanitized);
+                window.location.href = 'result.html';
+                
+                return false;
+            }
+            
+            function sanitizeInput(input) {
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;');
+            }
+        </script>
+    </body>
+</html>
